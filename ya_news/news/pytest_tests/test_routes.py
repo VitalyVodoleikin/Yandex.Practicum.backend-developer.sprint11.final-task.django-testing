@@ -1,14 +1,14 @@
 from http import HTTPStatus
+
 import pytest
+from pytest_lazyfixture import lazy_fixture
 
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
 
 from news.models import Comment, News
-from .conftest import (
-    another_user_client, detail_url, home_url
-)
+
 
 User = get_user_model()
 
@@ -17,28 +17,113 @@ pytestmark = pytest.mark.django_db
 
 class TestRoutes:
 
-
     @pytest.mark.parametrize(
-            ['reverse_url', 'parametrized_client', 'status'],
-            [
-                (home_url, another_user_client, HTTPStatus.OK),
-                (detail_url, another_user_client, HTTPStatus.OK),
-            ]
+        ['reverse_url', 'parametrized_client', 'status'],
+        [
+            (
+                lazy_fixture('home_url'),
+                lazy_fixture('another_user_client'),
+                HTTPStatus.OK
+            ),
+            (
+                lazy_fixture('detail_url'),
+                lazy_fixture('another_user_client'),
+                HTTPStatus.OK
+            ),
+            (
+                lazy_fixture('login_url'),
+                lazy_fixture('another_user_client'),
+                HTTPStatus.OK
+            ),
+            (
+                lazy_fixture('signup_url'),
+                lazy_fixture('another_user_client'),
+                HTTPStatus.OK
+            ),
+
+            (
+                lazy_fixture('edit_url'),
+                lazy_fixture('author_client'),
+                HTTPStatus.OK
+            ),
+            (
+                lazy_fixture('delete_url'),
+                lazy_fixture('author_client'),
+                HTTPStatus.OK
+            ),]
     )
-    def test_status_codes(self, reverse_url, parametrized_client, status):
+    def test_status_codes(
+        self,
+        reverse_url,
+        parametrized_client,
+        status
+    ):
         # запрос
         response = parametrized_client.get(reverse_url)
         # ассерт
         assert response.status_code == status
 
+    @pytest.mark.parametrize(
+            ['reverse_url', 'parametrized_client', 'status'],
+            [(
+                lazy_fixture('logout_url'),
+                lazy_fixture('another_user_client'),
+                HTTPStatus.OK
+            )])
+    def test_status_code_logout(
+        self,
+        reverse_url,
+        parametrized_client,
+        status
+    ):
+        response = parametrized_client.post(reverse_url)
+        assert response.status_code == status
+
+    @pytest.mark.parametrize(
+        ['reverse_url', 'parametrized_client'],
+        [
+            (
+                lazy_fixture('foreign_edit_url'),
+                lazy_fixture('author_client')
+            ),
+            (
+                lazy_fixture('foreign_delete_url'),
+                lazy_fixture('author_client')
+            ),
+            (
+                lazy_fixture('edit_url'),
+                lazy_fixture('another_user_client')
+            ),
+            (
+                lazy_fixture('delete_url'),
+                lazy_fixture('another_user_client')),]
+    )
+    def test_redirects(
+        self,
+        reverse_url,
+        parametrized_client,
+        login_url
+    ):
+        response = parametrized_client.get(reverse_url)
+        if response.status_code == HTTPStatus.NOT_FOUND:
+            assert True
+        else:
+            assert response.status_code == HTTPStatus.FOUND
+            assert response.url == f'{login_url}?next={reverse_url}'
 
 
-    # # Тесты для анонимного пользователя
-    # def test_anonymous_home_page(self, another_user_client, home_url):
+
+
+
+
+
+# ==========++++++++++==========++++++++++==========
+# # Тесты для анонимного пользователя
+    # def test_anonymous_home_page(self, another_user_client, home_url):  #+++
     #     response = another_user_client.get(home_url)
     #     assert response.status_code == HTTPStatus.OK
 
-    # def test_anonymous_news_detail(self, another_user_client, detail_url):
+    # def test_anonymous_news_detail(self, another_user_client, detail_url):  #+++
     #     response = another_user_client.get(detail_url)
     #     assert response.status_code == HTTPStatus.OK
 
@@ -61,43 +146,32 @@ class TestRoutes:
     #         assert response.url == f'{login_url}?next={delete_url}'
 
     # def test_anonymous_auth_pages(self, another_user_client, login_url,
-    #                               signup_url, logout_url):
-    #     login_response = another_user_client.get(login_url)
+    #                               signup_url, logout_url):  #+++
+    #     login_response = another_user_client.get(login_url)  #+++
     #     assert login_response.status_code == HTTPStatus.OK
-    #     signup_response = another_user_client.get(signup_url)
+    #     signup_response = another_user_client.get(signup_url)  #+++
     #     assert signup_response.status_code == HTTPStatus.OK
-    #     logout_response = another_user_client.post(logout_url)
+    #     logout_response = another_user_client.post(logout_url)  #+++
     #     assert logout_response.status_code == HTTPStatus.OK
 
-
-
-
-
-
     # # Тесты для авторизованного пользователя
-    # def test_authorized_comment_edit(self, author_client, edit_url):
+    # def test_authorized_comment_edit(self, author_client, edit_url):  #+++
     #     response = author_client.get(edit_url)
     #     assert response.status_code == HTTPStatus.OK
 
-    # def test_authorized_comment_delete(self, author_client, delete_url):
+    # def test_authorized_comment_delete(self, author_client, delete_url):  #+++
     #     response = author_client.get(delete_url)
     #     assert response.status_code == HTTPStatus.OK
 
     # def test_authorized_foreign_comment_edit(self, author_client,
-    #                                          foreign_edit_url):
+    #                                          foreign_edit_url):  #+++
     #     response = author_client.get(foreign_edit_url)
     #     assert response.status_code == HTTPStatus.NOT_FOUND
 
     # def test_authorized_foreign_comment_delete(self, author_client,
-    #                                            foreign_delete_url):
+    #                                            foreign_delete_url):  #+++
     #     response = author_client.get(foreign_delete_url)
     #     assert response.status_code == HTTPStatus.NOT_FOUND
-
-
-
-
-
-
 
 
 
