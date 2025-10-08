@@ -1,13 +1,13 @@
 import datetime
 from time import timezone
+
+import pytest
+from django.conf import settings
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
-import pytest
 
 from news.models import Comment, News
-from yanews import settings
-
 from .const import COUNT_OF_COMMENTS
 
 
