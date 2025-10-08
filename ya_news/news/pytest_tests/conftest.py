@@ -115,6 +115,12 @@ def signup_url():
     return reverse('users:signup')
 
 
+@pytest.fixture
+def logout_url():
+    """URL страницы выхода."""
+    return reverse('users:logout')
+
+
 
 
 
