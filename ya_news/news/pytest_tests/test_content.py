@@ -1,7 +1,12 @@
 from http import HTTPStatus
 
+import pytest
+
 from news.forms import CommentForm
-from yanews import settings
+from django.conf import settings
+
+
+pytestmark = pytest.mark.django_db
 
 
 def test_news_count(client, home_url, news_list):
