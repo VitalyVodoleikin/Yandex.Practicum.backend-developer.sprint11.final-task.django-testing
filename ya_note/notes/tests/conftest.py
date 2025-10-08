@@ -1,7 +1,8 @@
-
 from django.contrib.auth.models import User
+
+from django.test import Client, TestCase
 from django.urls import reverse
-from django.test import TestCase
+
 from notes.models import Note
 
 
@@ -9,15 +10,18 @@ class BaseTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-
-        cls.user = User.objects.create_user(
+        
+        cls.userFirst = User.objects.create_user(
             username='UserFirst',
-            password='UserFirstPassword')
-
+            password='UserFirstpassword')
+        
+        cls.clientFirst = Client()
+        cls.clientFirst.force_login(cls.userFirst)
+                
         cls.note = Note.objects.create(
             title='Тестовая заметка',
             text='Содержание тестовой заметки',
-            author=cls.user)
+            author=cls.userFirst)
 
         cls.url_test_anonymous_access_notes_home = reverse('notes:home')
         cls.url_test_anonymous_access_users_login = reverse('users:login')
@@ -46,3 +50,17 @@ class BaseTestCase(TestCase):
             'users:login': reverse('users:login'),
             'users:logout': reverse('users:logout')
         }
+
+    def setUp(self):
+
+        self.userSecond = User.objects.create_user(
+            username='UserSecond',
+            password='UserSecondPassword'
+        )
+
+        self.clientSecond = Client()
+        self.clientSecond.force_login(self.userSecond)
+
+        
+
+
