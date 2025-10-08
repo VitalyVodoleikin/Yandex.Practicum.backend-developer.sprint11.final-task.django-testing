@@ -1,10 +1,15 @@
 from http import HTTPStatus
 
 from django.urls import reverse
-from news.models import Comment
-from news.forms import WARNING
+import pytest
 from pytest_django.asserts import assertRedirects
-from .const import COMMENT_TEXT, BAD_WORDS_TEXT
+
+from news.forms import WARNING
+from news.models import Comment
+from .const import BAD_WORDS_TEXT, COMMENT_TEXT
+
+
+pytestmark = pytest.mark.django_db
 
 
 def test_anonymous_user_cant_create_comment(client, news, detail_url):
@@ -23,6 +28,8 @@ def test_user_can_create_comment(author, author_client, news, detail_url):
     assert Comment.objects.count() == 1
     comment = Comment.objects.get()
     assert comment.text == COMMENT_TEXT['text']
+    assert comment.news == news
+    assert comment.author == author
 
 
 def test_user_cant_use_bad_words(author_client, news, detail_url):
@@ -45,6 +52,8 @@ def test_author_can_edit_comment(author_client, comment, edit_url):
     assertRedirects(response, f'{detail_url}#comments')
     updated_comment = Comment.objects.get(pk=comment.id)
     assert updated_comment.text == COMMENT_TEXT['text']
+    assert updated_comment.author == comment.author
+    assert updated_comment.news == comment.news
 
 
 def test_author_can_delete_comment(author_client, comment, delete_url):
@@ -62,6 +71,8 @@ def test_reader_cant_edit_comment(another_user_client, comment, edit_url):
     assert response.status_code == HTTPStatus.NOT_FOUND
     updated_comment = Comment.objects.get(pk=comment.id)
     assert updated_comment.text == comment.text
+    assert updated_comment.author == comment.author
+    assert updated_comment.news == comment.news
 
 
 def test_reader_cant_delete_comment(another_user_client, comment, delete_url):
