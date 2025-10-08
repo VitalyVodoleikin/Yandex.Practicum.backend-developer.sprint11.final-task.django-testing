@@ -1,61 +1,14 @@
 import unittest
-from http import HTTPStatus
-
-from django.contrib.auth.models import User
-from django.test import TestCase
-from django.urls import reverse
-
-from notes.models import Note
-
-
-class BaseTestCase(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-
-        cls.user = User.objects.create_user(
-            username='User1',
-            password='User1password')
-
-        cls.note = Note.objects.create(
-            title='Тестовая заметка',
-            text='Содержание тестовой заметки',
-            author=cls.user)
-
-        cls.url_test_anonymous_access_notes_home = reverse('notes:home')
-        cls.url_test_anonymous_access_users_login = reverse('users:login')
-        cls.url_test_anonymous_access_users_logout = reverse('users:logout')
-
-        cls.urls_test_anonymous_access = {
-            'notes:list': reverse('notes:list'),
-            'notes:success': reverse('notes:success'),
-            'notes:add': reverse('notes:add'),
-            'notes:detail': reverse('notes:detail', args=[cls.note.id]),
-            'notes:edit': reverse('notes:edit', args=[cls.note.id]),
-            'notes:delete': reverse('notes:delete', args=[cls.note.id])
-        }
-
-        cls.urls_test_authenticated_access = {
-            'notes:list': reverse('notes:list'),
-            'notes:success': reverse('notes:success'),
-            'notes:add': reverse('notes:add'),
-            'notes:detail': reverse('notes:detail', args=[cls.note.slug]),
-            'notes:edit': reverse('notes:edit', args=[cls.note.slug]),
-            'notes:delete': reverse('notes:delete', args=[cls.note.slug])
-        }
-
-        cls.urls_test_public_pages = {
-            'users:signup': reverse('users:signup'),
-            'users:login': reverse('users:login'),
-            'users:logout': reverse('users:logout')
-        }
+from http import HTTPStatus, client
+from .conftest import BaseTestCase
 
 
 class RouteTests(BaseTestCase):
 
-    @classmethod
-    def setUpTestData(cls):
-        return super().setUpTestData()
+    def setUp(self):
+        super().setUpTestData()
+        self.client = client()
+        self.client.force_login(self.user)
 
     def test_anonymous_access(self):
         """Проверка доступа анонимного пользователя к главной странице."""
@@ -72,8 +25,8 @@ class RouteTests(BaseTestCase):
 
     def test_authenticated_access(self):
         """Проверка доступа к основным страницам и к странице своей заметки."""
-        # Авторизуем пользователя
-        self.client.login(username='User1', password='User1password')
+        # # Авторизуем пользователя
+        # self.client.login(username='User1', password='User1password')
         # Проверяем доступ к основным страницам
         urls_authenticated_access = self.urls_test_authenticated_access
         for url in urls_authenticated_access.values():
