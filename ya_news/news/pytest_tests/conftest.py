@@ -58,6 +58,17 @@ def comment(news, author):
 
 
 @pytest.fixture
+def foreign_comment(news, another_user):
+    """Создание чужого комментария."""
+    other_comment = Comment.objects.create(
+        news=news,
+        text='Текст чужого комменатрия',
+        author=another_user
+    )
+    return other_comment
+
+
+@pytest.fixture
 def news_list(db):
     """Создание списка новостей."""
     today = datetime.date.today()
@@ -95,6 +106,18 @@ def detail_url(news):
 def edit_url(comment):
     """URL редактирования комментария."""
     return reverse('news:edit', args=(comment.id,))
+
+
+@pytest.fixture
+def foreign_edit_url(foreign_comment):
+    """URL редактирования чужого комментария."""
+    return reverse('news:edit', args=(foreign_comment.id,))
+
+
+@pytest.fixture
+def foreign_delete_url(foreign_comment):
+    """URL удаления чужого комментария."""
+    return reverse('news:delete', args=(foreign_comment.id,))
 
 
 @pytest.fixture

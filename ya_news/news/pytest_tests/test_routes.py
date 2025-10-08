@@ -23,25 +23,26 @@ class TestRoutes:
         response = another_user_client.get(detail_url)
         assert response.status_code == HTTPStatus.OK
 
-    def test_anonymous_comment_edit_redirect(self, another_user_client, login_url, edit_url):
-        url_login = login_url
+    def test_anonymous_comment_edit_redirect(self, another_user_client,
+                                             login_url, edit_url):
         response = another_user_client.get(edit_url)
         if response.status_code == HTTPStatus.NOT_FOUND:
             assert True
         else:
             assert response.status_code == HTTPStatus.FOUND
-            assert response.url == f'{url_login}?next={edit_url}'
+            assert response.url == f'{login_url}?next={edit_url}'
 
-    def test_anonymous_comment_delete_redirect(self, another_user_client, login_url, delete_url):
-        url_login = login_url
+    def test_anonymous_comment_delete_redirect(self, another_user_client,
+                                               login_url, delete_url):
         response = another_user_client.get(delete_url)
         if response.status_code == HTTPStatus.NOT_FOUND:
             assert True
         else:
             assert response.status_code == HTTPStatus.FOUND
-            assert response.url == f'{url_login}?next={delete_url}'
+            assert response.url == f'{login_url}?next={delete_url}'
 
-    def test_anonymous_auth_pages(self, another_user_client, login_url, signup_url, logout_url):
+    def test_anonymous_auth_pages(self, another_user_client, login_url,
+                                  signup_url, logout_url):
         login_response = another_user_client.get(login_url)
         assert login_response.status_code == HTTPStatus.OK
         signup_response = another_user_client.get(signup_url)
@@ -49,48 +50,23 @@ class TestRoutes:
         logout_response = another_user_client.post(logout_url)
         assert logout_response.status_code == HTTPStatus.OK
 
-
-
-
-
-
     # Тесты для авторизованного пользователя
     def test_authorized_comment_edit(self, author_client, edit_url):
-        author_client.force_login(self.user)
         response = author_client.get(edit_url)
         assert response.status_code == HTTPStatus.OK
 
     def test_authorized_comment_delete(self, author_client, delete_url):
-        author_client.force_login(self.user)
         response = author_client.get(delete_url)
         assert response.status_code == HTTPStatus.OK
 
-    def test_authorized_foreign_comment_edit(self, author_client):
-        other_user = User.objects.create_user(
-            username='anotheruser',
-            password='anotherpassword'
-        )
-        other_comment = Comment.objects.create(
-            news=self.news,
-            author=other_user,
-            text='Other user comment'
-        )
-        author_client.force_login(self.user)
-        response = author_client.get(reverse('news:edit', args=[other_comment.id]))
+    def test_authorized_foreign_comment_edit(self, author_client,
+                                             foreign_edit_url):
+        response = author_client.get(foreign_edit_url)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_authorized_foreign_comment_delete(self, author_client):
-        other_user = User.objects.create_user(
-            username='anotheruser',
-            password='anotherpassword'
-        )
-        other_comment = Comment.objects.create(
-            news=self.news,
-            author=other_user,
-            text='Another user comment'
-        )
-        author_client.force_login(self.user)
-        response = author_client.get(reverse('news:delete', args=[other_comment.id]))
+    def test_authorized_foreign_comment_delete(self, author_client,
+                                               foreign_delete_url):
+        response = author_client.get(foreign_delete_url)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
 
