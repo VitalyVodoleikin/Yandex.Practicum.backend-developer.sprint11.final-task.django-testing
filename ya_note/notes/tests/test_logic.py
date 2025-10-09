@@ -1,7 +1,6 @@
 import unittest
 from http import HTTPStatus
 
-from django.contrib.auth.models import User
 from pytils.translit import slugify
 
 from .conftest import BaseTestCase
