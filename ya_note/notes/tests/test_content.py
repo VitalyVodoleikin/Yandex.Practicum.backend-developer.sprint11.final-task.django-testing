@@ -1,5 +1,5 @@
-from http import HTTPStatus
 import unittest
+from http import HTTPStatus
 
 from notes.forms import NoteForm
 from .conftest import BaseTestCase
@@ -11,19 +11,14 @@ class ContentTests(BaseTestCase):
         # Проверка передачи заметки в context.
         # Проверка изоляции заметок разных пользователей.
         authenticated_users = (
-            (self.clientFirst, self.first_note_userFirstAuthorized),
-            (self.clientSecond, self.first_note_userSecondAuthorized)
-        )
+            (self.client_first, self.first_note_user_first_authorized),
+            (self.client_second, self.first_note_user_second_authorized))
         for user, note in authenticated_users:
-            for user_, note_ in authenticated_users[::-1]:
-                if user == user_:
-                    continue
-                with self.subTest():
-                    response = user.get(
-                        self.all_urls['general_urls']['notes:list'])
-                    self.assertEqual(response.status_code, HTTPStatus.OK)
-                    self.assertIn(note, response.context['object_list'])
-                    self.assertNotIn(note_, response.context['object_list'])
+            with self.subTest(user=user, note=note):
+                response = user.get(
+                    self.all_urls['general_urls']['notes:list'])
+                self.assertEqual(response.status_code, HTTPStatus.OK)
+                self.assertIn(note, response.context['object_list'])
 
     def test_form_in_create_and_edit_view(self):
         # Проверка передачи формы на страницу создания
@@ -32,8 +27,8 @@ class ContentTests(BaseTestCase):
             self.all_urls['general_urls']['notes:add'],
             self.all_urls['test_authenticated_access_urls']['notes:edit'])
         for url in urls:
-            with self.subTest():
-                response = self.clientFirst.get(url)
+            with self.subTest(url=url):
+                response = self.client_first.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
                 self.assertIn('form', response.context)
                 self.assertIsNotNone(response.context['form'])

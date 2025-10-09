@@ -1,5 +1,5 @@
-from http import HTTPStatus
 import unittest
+from http import HTTPStatus
 
 from .conftest import BaseTestCase
 
@@ -8,7 +8,7 @@ class RouteTests(BaseTestCase):
 
     def test_anonymous_access(self):
         """Проверка доступа анонимного пользователя к главной странице."""
-        response = self.clientSecond.get(
+        response = self.client_second.get(
             self.all_urls['general_urls']['notes:home'])
         self.assertEqual(response.status_code, HTTPStatus.OK)
         # Перенаправление на страницу логина для анонимного пользователя
@@ -26,7 +26,7 @@ class RouteTests(BaseTestCase):
             'test_authenticated_access_urls']
         for url in urls_authenticated_access.values():
             with self.subTest():
-                response = self.clientFirst.get(url)
+                response = self.client_first.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_public_pages_signup_login_pages(self):
