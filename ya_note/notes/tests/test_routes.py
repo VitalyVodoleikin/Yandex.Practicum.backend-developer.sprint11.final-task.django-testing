@@ -1,5 +1,5 @@
-import unittest
 from http import HTTPStatus
+import unittest
 
 from .conftest import BaseTestCase
 
@@ -41,7 +41,8 @@ class RouteTests(BaseTestCase):
 
     def test_public_pages_logout_page(self):
         """Проверка доступности страницы выхода для всех пользователей."""
-        response = self.client.post(self.all_urls['public_urls']['users:logout'])
+        response = self.client.post(
+            self.all_urls['public_urls']['users:logout'])
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
