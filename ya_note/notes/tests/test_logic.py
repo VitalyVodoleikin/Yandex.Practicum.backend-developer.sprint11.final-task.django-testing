@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from django.contrib.auth.models import User
 import unittest
 from notes.models import Note
 from pytils.translit import slugify
@@ -12,18 +13,37 @@ class NoteLogicTests(BaseTestCase):
         """Тест на создание заметки авторизованным пользователем."""
         # Проверяем начальное количество заметок
         self.assertEqual(Note.objects.count(), self.quantity_notes)
+        # print('Кол-во заметок', Note.objects.count())
+
+        # Чистим БД
+        users_added_notes_in_database = (
+            self.userFirstAuthorized,
+            self.userSecondAuthorized
+        )
+
+        for user in users_added_notes_in_database:
+            user_ = User.objects.get(pk=user.pk)
+            Note.objects.filter(author=user_).delete()
+
+        # print('БД очищена')
+        # print('Кол-во заметок', Note.objects.count())
+
         # Создаем заметку
         response = self.clientSecond.post(
             self.all_urls['general_urls']['notes:add'],
             data={
-                'title': self.SECOND_TEST_NOTE_TITLE,
-                'text': self.SECOND_TEST_NOTE_TEXT})
+                'title': self.SECONDUSER_TEST_SECONDNOTE_TITLE,
+                'text': self.SECONDUSER_TEST_SECONDNOTE_TEXT})
+        
+        # print('В БД добавлена 1 заметка')
+        # print('Кол-во заметок', Note.objects.count())
+        
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertEqual(Note.objects.count(), self.quantity_notes + 1)
+
         # Проверяем создание новой заметки
-        new_note = Note.objects.last()
-        self.assertEqual(new_note.title, self.SECOND_TEST_NOTE_TITLE)
-        self.assertEqual(new_note.text, self.SECOND_TEST_NOTE_TEXT)
+        new_note = Note.objects.get()
+        self.assertEqual(new_note.title, self.SECONDUSER_TEST_SECONDNOTE_TITLE)
+        self.assertEqual(new_note.text, self.SECONDUSER_TEST_SECONDNOTE_TEXT)
         self.assertEqual(new_note.author, self.userSecondAuthorized)
 
     def test_create_note_anonymous(self):
@@ -51,12 +71,34 @@ class NoteLogicTests(BaseTestCase):
 
     def test_auto_slug(self):
         """Тест на автоматическое формирование slug."""
+
+        # Проверяем начальное количество заметок
+        self.assertEqual(Note.objects.count(), self.quantity_notes)
+        # print('Кол-во заметок', Note.objects.count())
+
+        # Чистим БД
+        users_added_notes_in_database = (
+            self.userFirstAuthorized,
+            self.userSecondAuthorized
+        )
+
+        for user in users_added_notes_in_database:
+            user_ = User.objects.get(pk=user.pk)
+            Note.objects.filter(author=user_).delete()
+
+        # print('БД очищена')
+        # print('Кол-во заметок', Note.objects.count())
+
         response = self.clientSecond.post(
             self.all_urls['general_urls']['notes:add'], {
                 'title': self.TITLE_NEW_NOTE,
                 'text': self.TEXT_NEW_NOTE})
+        
+        # print('В БД добавлена 1 заметка')
+        # print('Кол-во заметок', Note.objects.count())
+
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        new_note = Note.objects.last()
+        new_note = Note.objects.get()
         self.assertEqual(new_note.slug, slugify(self.TITLE_NEW_NOTE))
 
     def test_edit_own_note(self):
@@ -81,7 +123,7 @@ class NoteLogicTests(BaseTestCase):
 
         response = self.clientFirst.post(
             self.all_urls['test_authenticated_access_urls']['notes:edit'], {
-                'pk': self.first_note_userFirstAuthorized.pk,
+                # 'pk': self.first_note_userFirstAuthorized.pk,
                 'title': self.TITLE_CHANGED_NOTE,
                 'text': self.TEXT_CHANGED_NOTE})
 
@@ -124,7 +166,7 @@ class NoteLogicTests(BaseTestCase):
 
         response = self.clientSecond.post(
             self.all_urls['test_authenticated_access_urls']['notes:edit'], {
-                'pk': self.first_note_userFirstAuthorized.pk,
+                # 'pk': self.first_note_userFirstAuthorized.pk,
                 'title': self.ATTEMPT_TO_CHAGE_TITLE,
                 'text': self.ANOTHER_TEXT_NOTE})
         

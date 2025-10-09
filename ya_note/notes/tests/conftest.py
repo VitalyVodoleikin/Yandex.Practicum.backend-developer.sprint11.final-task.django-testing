@@ -86,8 +86,8 @@ class BaseTestCase(TestCase):
         cls.TITLE_CHANGED_NOTE = 'Измененная заметка'
         cls.TEXT_CHANGED_NOTE = 'Новое содержание измененной заметки'
 
-        cls.SECOND_TEST_NOTE_TITLE = 'Тест. заметка 2 авториз. польз-ля 2'
-        cls.SECOND_TEST_NOTE_TEXT = 'Содерж. заметки 2 авториз. польз-ля 2'
+        cls.SECONDUSER_TEST_SECONDNOTE_TITLE = 'Тест. заметка 2 авториз. польз-ля 2'
+        cls.SECONDUSER_TEST_SECONDNOTE_TEXT = 'Содерж. заметки 2 авториз. польз-ля 2'
 
         cls.quantity_notes = Note.objects.count()
 
