@@ -51,6 +51,15 @@ class BaseTestCase(TestCase):
             'users:logout': reverse('users:logout')
         }
 
+        cls.SECOND_TEST_NOTE_TITLE = 'Тестовая заметка 2 авторизованного пользователя 2'
+        cls.SECOND_TEST_NOTE_TEXT = 'Содержание заметки 2 авторизованного пользователя 2'
+        cls.TITLE_CHANGED_NOTE = 'Измененная заметка'
+        cls.TEXT_CHANGED_NOTE = 'Новое содержание измененной заметки'
+        cls.TITLE_NEW_NOTE = 'Новая заметка'
+        cls.TEXT_NEW_NOTE = 'Содержание новой заметки'
+        cls.ANOTHER_TEXT_NOTE = 'Другое содержание'
+        cls.ATTEMPT_TO_CHAGE = 'Попытка изменения'
+
     def setUp(self):
 
         # Создание второго авторизованного пользователя

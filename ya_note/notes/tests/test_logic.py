@@ -1,26 +1,18 @@
 from http import HTTPStatus
 import unittest
-from django.urls import reverse
-from django.contrib.auth.models import User
-from django.test import Client, TestCase
 from notes.models import Note
 from pytils.translit import slugify
 from .conftest import BaseTestCase
+from notes.forms import WARNING
 
 
 class NoteLogicTests(BaseTestCase):
 
-    SECOND_TEST_NOTE_TITLE = 'Тестовая заметка 2 авторизованного пользователя 2'
-    SECOND_TEST_NOTE_TEXT = 'Содержание заметки 2 авторизованного пользователя 2'
-    TITLE_CHANGED_NOTE = 'Измененная заметка'
-    TEXT_CHANGED_NOTE = 'Новое содержание'
-
     def test_create_note_authenticated(self):
         """Тест на создание заметки авторизованным пользователем."""
         # Проверяем начальное количество заметок
-
         self.assertEqual(Note.objects.count(), self.quantity_notes)
-
+        # Создаем заметку
         response = self.clientSecond.post(
             self.urls_test_authenticated_access['notes:add'],
             data={
@@ -34,33 +26,38 @@ class NoteLogicTests(BaseTestCase):
         self.assertEqual(new_note.text, self.SECOND_TEST_NOTE_TEXT)
         self.assertEqual(new_note.author, self.userSecondAuthorized)
 
-    # def test_create_note_anonymous(self):
-    #     """Тест на невозможность создания заметки анонимным пользователем."""
-    #     anon_client = Client()
-    #     response = anon_client.post(reverse('notes:add'), {
-    #         'title': 'Новая заметка',
-    #         'text': 'Содержание новой заметки'})
-    #     self.assertEqual(response.status_code, 302)
-    #     self.assertEqual(Note.objects.count(), 1)
+    def test_create_note_anonymous(self):
+        """Тест на невозможность создания заметки анонимным пользователем."""
+        response = self.clientThirdAnonimus.post(
+            self.urls_test_anonymous_access['notes:add'], {
+                'title': self.TITLE_NEW_NOTE,
+                'text': self.TEXT_NEW_NOTE})
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertEqual(Note.objects.count(), self.quantity_notes)
 
-    # def test_unique_slug(self):
-    #     """Тест на уникальность slug."""
-    #     # Попытка создать заметку с тем же slug
-    #     with self.assertRaises(Exception):
-    #         Note.objects.create(
-    #             title=self.note.title,
-    #             text='Другое содержание',
-    #             author=self.user1,
-    #             slug=self.note.slug)
+    def test_unique_slug(self):
+        """Тест на уникальность slug."""
+        # Попытка создать заметку с тем же slug
+        response = self.clientFirst.post(
+            self.urls_test_authenticated_access['notes:add'], {
+                'title': self.TITLE_NEW_NOTE,
+                'text': self.TEXT_NEW_NOTE,
+                'slug': self.first_note_userFirstAuthorized.slug})
+        self.assertEqual(Note.objects.count(), self.quantity_notes)
+        self.assertFormError(
+            response.context['form'],
+            'slug',
+            f'{self.first_note_userFirstAuthorized.slug}{WARNING}')
 
-    # def test_auto_slug(self):
-    #     """Тест на автоматическое формирование slug."""
-    #     response = self.client.post(reverse('notes:add'), {
-    #         'title': 'Тестовая заметка',
-    #         'text': 'Содержание'})
-    #     self.assertEqual(response.status_code, 302)
-    #     new_note = Note.objects.last()
-    #     self.assertEqual(new_note.slug, slugify('тестовая-заметка'))
+    def test_auto_slug(self):
+        """Тест на автоматическое формирование slug."""
+        response = self.clientSecond.post(
+            self.urls_test_authenticated_access['notes:add'], {
+                'title': self.TITLE_NEW_NOTE,
+                'text': self.TEXT_NEW_NOTE})
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        new_note = Note.objects.last()
+        self.assertEqual(new_note.slug, slugify(self.TITLE_NEW_NOTE))
 
     def test_edit_own_note(self):
         """Тест на редактирование своей заметки."""
@@ -68,25 +65,35 @@ class NoteLogicTests(BaseTestCase):
             self.urls_test_authenticated_access['notes:edit'], {
                 'title': self.TITLE_CHANGED_NOTE,
                 'text': self.TEXT_CHANGED_NOTE})
+        edited_note = Note.objects.get(
+            id=self.first_note_userFirstAuthorized.id)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.first_note_userFirstAuthorized.refresh_from_db()
-        self.assertEqual(
+        self.assertNotEqual(
             self.first_note_userFirstAuthorized.title,
             self.TITLE_CHANGED_NOTE)
+        self.assertNotEqual(
+            self.first_note_userFirstAuthorized.text,
+            self.TEXT_CHANGED_NOTE)
+        self.assertEqual(
+            self.first_note_userFirstAuthorized.author,
+            self.userFirstAuthorized)
+        self.assertNotEqual(
+            self.first_note_userFirstAuthorized.slug,
+            edited_note.slug)
 
     def test_edit_foreign_note(self):
         """Тест на невозможность редактирования чужой заметки."""
         response = self.clientSecond.post(
             self.urls_test_authenticated_access['notes:edit'],
-            {'title': 'Попытка изменения'})
+            {'title': self.ATTEMPT_TO_CHAGE})
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
-    # def test_delete_own_note(self):
-    #     """Тест на удаление своей заметки."""
-    #     response = self.clientFirst.post(
-    #         self.urls_test_authenticated_access['notes:delete'])
-    #     self.assertEqual(response.status_code, 302)
-    #     self.assertEqual(Note.objects.count(), 0)
+    def test_delete_own_note(self):
+        """Тест на удаление своей заметки."""
+        response = self.clientFirst.post(
+            self.urls_test_authenticated_access['notes:delete'])
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertEqual(Note.objects.count(), self.quantity_notes - 1)
 
     def test_delete_foreign_note(self):
         """Тест на невозможность удаления чужой заметки."""
@@ -109,7 +116,7 @@ if __name__ == '__main__':
 
 
 
-
+# +++
 
 
 
