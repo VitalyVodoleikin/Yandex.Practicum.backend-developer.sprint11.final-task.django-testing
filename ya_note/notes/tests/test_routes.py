@@ -9,21 +9,21 @@ class RouteTests(BaseTestCase):
     def test_anonymous_access(self):
         """Проверка доступа анонимного пользователя к главной странице."""
         response = self.clientSecond.get(
-            self.url_test_anonymous_access_notes_home)
+            self.all_urls['general_urls']['notes:home'])
         self.assertEqual(response.status_code, HTTPStatus.OK)
         # Перенаправление на страницу логина для анонимного пользователя
-        urls_anonimus_access = self.urls_test_anonymous_access
+        urls_anonimus_access = self.all_urls['test_anonymous_access_urls']
         for url in urls_anonimus_access.values():
             response = self.client.get(url)
             self.assertRedirects(
                 response,
-                f'{self.url_test_anonymous_access_users_login}?next={url}'
-            )
+                f'{self.all_urls['public_urls']['users:login']}?next={url}')
 
     def test_authenticated_access(self):
         """Проверка доступа к основным страницам и к странице своей заметки."""
         # Проверяем доступ к основным страницам
-        urls_authenticated_access = self.urls_test_authenticated_access
+        urls_authenticated_access = self.all_urls[
+            'test_authenticated_access_urls']
         for url in urls_authenticated_access.values():
             with self.subTest():
                 response = self.clientFirst.get(url)
@@ -32,9 +32,8 @@ class RouteTests(BaseTestCase):
     def test_public_pages_signup_login_pages(self):
         """Доступность страниц входа и авторизации для всех пользователей."""
         urls = (
-            self.urls_test_public_pages['users:signup'],
-            self.urls_test_public_pages['users:login']
-        )
+            self.all_urls['public_urls']['users:signup'],
+            self.all_urls['public_urls']['users:login'])
         for url in urls:
             with self.subTest():
                 response = self.client.get(url)
@@ -42,7 +41,7 @@ class RouteTests(BaseTestCase):
 
     def test_public_pages_logout_page(self):
         """Проверка доступности страницы выхода для всех пользователей."""
-        response = self.client.post(self.urls_test_public_pages['users:logout'])
+        response = self.client.post(self.all_urls['public_urls']['users:logout'])
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
 

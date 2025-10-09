@@ -14,7 +14,7 @@ class NoteLogicTests(BaseTestCase):
         self.assertEqual(Note.objects.count(), self.quantity_notes)
         # Создаем заметку
         response = self.clientSecond.post(
-            self.urls_test_authenticated_access['notes:add'],
+            self.all_urls['general_urls']['notes:add'],
             data={
                 'title': self.SECOND_TEST_NOTE_TITLE,
                 'text': self.SECOND_TEST_NOTE_TEXT})
@@ -29,7 +29,7 @@ class NoteLogicTests(BaseTestCase):
     def test_create_note_anonymous(self):
         """Тест на невозможность создания заметки анонимным пользователем."""
         response = self.clientThirdAnonimus.post(
-            self.urls_test_anonymous_access['notes:add'], {
+            self.all_urls['general_urls']['notes:add'], {
                 'title': self.TITLE_NEW_NOTE,
                 'text': self.TEXT_NEW_NOTE})
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -39,7 +39,7 @@ class NoteLogicTests(BaseTestCase):
         """Тест на уникальность slug."""
         # Попытка создать заметку с тем же slug
         response = self.clientFirst.post(
-            self.urls_test_authenticated_access['notes:add'], {
+            self.all_urls['general_urls']['notes:add'], {
                 'title': self.TITLE_NEW_NOTE,
                 'text': self.TEXT_NEW_NOTE,
                 'slug': self.first_note_userFirstAuthorized.slug})
@@ -52,7 +52,7 @@ class NoteLogicTests(BaseTestCase):
     def test_auto_slug(self):
         """Тест на автоматическое формирование slug."""
         response = self.clientSecond.post(
-            self.urls_test_authenticated_access['notes:add'], {
+            self.all_urls['general_urls']['notes:add'], {
                 'title': self.TITLE_NEW_NOTE,
                 'text': self.TEXT_NEW_NOTE})
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -62,7 +62,7 @@ class NoteLogicTests(BaseTestCase):
     def test_edit_own_note(self):
         """Тест на редактирование своей заметки."""
         response = self.clientFirst.post(
-            self.urls_test_authenticated_access['notes:edit'], {
+            self.all_urls['test_authenticated_access_urls']['notes:edit'], {
                 'title': self.TITLE_CHANGED_NOTE,
                 'text': self.TEXT_CHANGED_NOTE})
         edited_note = Note.objects.get(
@@ -84,14 +84,14 @@ class NoteLogicTests(BaseTestCase):
     def test_edit_foreign_note(self):
         """Тест на невозможность редактирования чужой заметки."""
         response = self.clientSecond.post(
-            self.urls_test_authenticated_access['notes:edit'],
+            self.all_urls['test_authenticated_access_urls']['notes:edit'],
             {'title': self.ATTEMPT_TO_CHAGE})
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_delete_own_note(self):
         """Тест на удаление своей заметки."""
         response = self.clientFirst.post(
-            self.urls_test_authenticated_access['notes:delete'])
+            self.all_urls['test_authenticated_access_urls']['notes:delete'])
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertEqual(Note.objects.count(), self.quantity_notes - 1)
 
@@ -99,7 +99,7 @@ class NoteLogicTests(BaseTestCase):
         """Тест на невозможность удаления чужой заметки."""
         # Пытаемся удалить чужую заметку
         response = self.clientSecond.post(
-            self.urls_test_anonymous_access['notes:delete'],
+            self.all_urls['test_anonymous_access_urls']['notes:delete'],
             follow=True)
         # Проверяем, что заметка не была удалена
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)

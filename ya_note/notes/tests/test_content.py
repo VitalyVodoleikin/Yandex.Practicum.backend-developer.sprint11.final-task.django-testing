@@ -12,7 +12,7 @@ class ContentTests(BaseTestCase):
         # Проверка изоляции заметок разных пользователей.
         authenticated_users = (
             (self.clientFirst, self.first_note_userFirstAuthorized),
-            (self.clientSecond, self.second_note_userSecondAuthorized)
+            (self.clientSecond, self.first_note_userSecondAuthorized)
         )
         for user, note in authenticated_users:
             for user_, note_ in authenticated_users[::-1]:
@@ -20,7 +20,7 @@ class ContentTests(BaseTestCase):
                     continue
                 with self.subTest():
                     response = user.get(
-                        self.urls_test_authenticated_access['notes:list'])
+                        self.all_urls['general_urls']['notes:list'])
                     self.assertEqual(response.status_code, HTTPStatus.OK)
                     self.assertIn(note, response.context['object_list'])
                     self.assertNotIn(note_, response.context['object_list'])
@@ -29,9 +29,8 @@ class ContentTests(BaseTestCase):
         # Проверка передачи формы на страницу создания
         # страницу и редактирования заметок.
         urls = (
-            self.urls_test_authenticated_access['notes:add'],
-            self.urls_test_authenticated_access['notes:edit']
-        )
+            self.all_urls['general_urls']['notes:add'],
+            self.all_urls['test_authenticated_access_urls']['notes:edit'])
         for url in urls:
             with self.subTest():
                 response = self.clientFirst.get(url)
