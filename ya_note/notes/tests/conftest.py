@@ -78,7 +78,7 @@ class BaseTestCase(TestCase):
 
         # Константы
         cls.ANOTHER_TEXT_NOTE = 'Другое содержание'
-        cls.ATTEMPT_TO_CHAGE = 'Попытка изменения'
+        cls.ATTEMPT_TO_CHAGE_TITLE = 'Попытка изменения'
 
         cls.TITLE_NEW_NOTE = 'Новая заметка'
         cls.TEXT_NEW_NOTE = 'Содержание новой заметки'
@@ -90,7 +90,7 @@ class BaseTestCase(TestCase):
         cls.SECOND_TEST_NOTE_TEXT = 'Содерж. заметки 2 авториз. польз-ля 2'
 
         cls.quantity_notes = Note.objects.count()
-        
+
     def setUp(self):
         pass
 

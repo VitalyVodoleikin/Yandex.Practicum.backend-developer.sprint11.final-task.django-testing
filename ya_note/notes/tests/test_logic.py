@@ -61,32 +61,89 @@ class NoteLogicTests(BaseTestCase):
 
     def test_edit_own_note(self):
         """Тест на редактирование своей заметки."""
+
+        will_be_edited_note = Note.objects.get(
+            id=self.first_note_userFirstAuthorized.id)
+
+        original_pk = will_be_edited_note.pk
+        original_title = will_be_edited_note.title
+        original_text = will_be_edited_note.text
+        original_author = will_be_edited_note.author
+        original_slug = will_be_edited_note.slug
+
+        # print('-' * 30)
+        # print(original_pk)
+        # print(original_title)
+        # print(original_text)
+        # print(original_author)
+        # print(original_slug)
+        # print('-' * 30)
+
         response = self.clientFirst.post(
             self.all_urls['test_authenticated_access_urls']['notes:edit'], {
+                'pk': self.first_note_userFirstAuthorized.pk,
                 'title': self.TITLE_CHANGED_NOTE,
                 'text': self.TEXT_CHANGED_NOTE})
-        edited_note = Note.objects.get(
-            id=self.first_note_userFirstAuthorized.id)
+
+        update_note = Note.objects.get(pk=will_be_edited_note.pk)
+
+        # print('-' * 30)
+        # print(update_note.pk)
+        # print(update_note.title)
+        # print(update_note.text)
+        # print(update_note.author)
+        # print(update_note.slug)
+        # print('-' * 30)
+
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertNotEqual(
-            self.first_note_userFirstAuthorized.title,
-            self.TITLE_CHANGED_NOTE)
-        self.assertNotEqual(
-            self.first_note_userFirstAuthorized.text,
-            self.TEXT_CHANGED_NOTE)
-        self.assertEqual(
-            self.first_note_userFirstAuthorized.author,
-            self.userFirstAuthorized)
-        self.assertNotEqual(
-            self.first_note_userFirstAuthorized.slug,
-            edited_note.slug)
+        self.assertEqual(update_note.pk, original_pk)
+        self.assertNotEqual(update_note.title, original_title)
+        self.assertNotEqual(update_note.text, original_text)
+        self.assertEqual(update_note.author, original_author)
+        self.assertNotEqual(update_note.slug, original_slug)
 
     def test_edit_foreign_note(self):
         """Тест на невозможность редактирования чужой заметки."""
+
+        will_be_not_edited_note = Note.objects.get(
+            id=self.first_note_userFirstAuthorized.id)
+
+        original_pk = will_be_not_edited_note.pk
+        original_title = will_be_not_edited_note.title
+        original_text = will_be_not_edited_note.text
+        original_author = will_be_not_edited_note.author
+        original_slug = will_be_not_edited_note.slug
+
+        # print('-' * 30)
+        # print(original_pk)
+        # print(original_title)
+        # print(original_text)
+        # print(original_author)
+        # print(original_slug)
+        # print('-' * 30)
+
         response = self.clientSecond.post(
-            self.all_urls['test_authenticated_access_urls']['notes:edit'],
-            {'title': self.ATTEMPT_TO_CHAGE})
+            self.all_urls['test_authenticated_access_urls']['notes:edit'], {
+                'pk': self.first_note_userFirstAuthorized.pk,
+                'title': self.ATTEMPT_TO_CHAGE_TITLE,
+                'text': self.ANOTHER_TEXT_NOTE})
+        
+        not_update_note = Note.objects.get(pk=will_be_not_edited_note.pk)
+
+        # print('-' * 30)
+        # print(not_update_note.pk)
+        # print(not_update_note.title)
+        # print(not_update_note.text)
+        # print(not_update_note.author)
+        # print(not_update_note.slug)
+        # print('-' * 30)
+
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        self.assertEqual(not_update_note.pk, original_pk)
+        self.assertEqual(not_update_note.title, original_title)
+        self.assertEqual(not_update_note.text, original_text)
+        self.assertEqual(not_update_note.author, original_author)
+        self.assertEqual(not_update_note.slug, original_slug)
 
     def test_delete_own_note(self):
         """Тест на удаление своей заметки."""
