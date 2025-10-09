@@ -1,12 +1,8 @@
 from http import HTTPStatus
 
 import pytest
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazyfixture import lazy_fixture as lf
 
-from django.contrib.auth import get_user_model
-
-
-User = get_user_model()
 
 pytestmark = pytest.mark.django_db
 
@@ -17,29 +13,29 @@ class TestRoutes:
         ['reverse_url', 'parametrized_client', 'status'],
         [
             (
-                lazy_fixture('home_url'),
-                lazy_fixture('another_user_client'),
+                lf('home_url'),
+                lf('another_user_client'),
                 HTTPStatus.OK),
             (
-                lazy_fixture('detail_url'),
-                lazy_fixture('another_user_client'),
+                lf('detail_url'),
+                lf('another_user_client'),
                 HTTPStatus.OK),
             (
-                lazy_fixture('login_url'),
-                lazy_fixture('another_user_client'),
+                lf('login_url'),
+                lf('another_user_client'),
                 HTTPStatus.OK),
             (
-                lazy_fixture('signup_url'),
-                lazy_fixture('another_user_client'),
+                lf('signup_url'),
+                lf('another_user_client'),
                 HTTPStatus.OK),
 
             (
-                lazy_fixture('edit_url'),
-                lazy_fixture('author_client'),
+                lf('edit_url'),
+                lf('author_client'),
                 HTTPStatus.OK),
             (
-                lazy_fixture('delete_url'),
-                lazy_fixture('author_client'),
+                lf('delete_url'),
+                lf('author_client'),
                 HTTPStatus.OK),])
     def test_status_codes(
         self,
@@ -53,8 +49,8 @@ class TestRoutes:
     @pytest.mark.parametrize(
         ['reverse_url', 'parametrized_client', 'status'],
         [(
-            lazy_fixture('logout_url'),
-            lazy_fixture('another_user_client'),
+            lf('logout_url'),
+            lf('another_user_client'),
             HTTPStatus.OK
         )])
     def test_status_code_logout(
@@ -70,17 +66,17 @@ class TestRoutes:
         ['reverse_url', 'parametrized_client'],
         [
             (
-                lazy_fixture('foreign_edit_url'),
-                lazy_fixture('author_client')),
+                lf('foreign_edit_url'),
+                lf('author_client')),
             (
-                lazy_fixture('foreign_delete_url'),
-                lazy_fixture('author_client')),
+                lf('foreign_delete_url'),
+                lf('author_client')),
             (
-                lazy_fixture('edit_url'),
-                lazy_fixture('another_user_client')),
+                lf('edit_url'),
+                lf('another_user_client')),
             (
-                lazy_fixture('delete_url'),
-                lazy_fixture('another_user_client')),])
+                lf('delete_url'),
+                lf('another_user_client')),])
     def test_redirects(
         self,
         reverse_url,
